@@ -23,85 +23,87 @@
     }
     h2 { font-size: 22px; margin-bottom: 8px; }
     p { color: #888; font-size: 13px; margin-bottom: 24px; }
-    #key {
+    #token-box {
       background: #0f0f14;
       border: 1px solid #3a3a5a;
       border-radius: 8px;
       padding: 16px;
-      font-size: 18px;
+      font-size: 22px;
       font-family: monospace;
-      color: #4ade80;
-      letter-spacing: 2px;
-      word-break: break-all;
+      color: #f59e0b;
+      letter-spacing: 3px;
       margin-bottom: 12px;
     }
     #msg { color: #aaa; font-size: 13px; }
-    #timer { color: #f59e0b; font-size: 12px; margin-top: 8px; }
+    #timer { color: #f87171; font-size: 12px; margin-top: 8px; }
     .copy-btn {
       margin-top: 16px;
-      background: #22c55e;
-      color: #fff;
+      background: #f59e0b;
+      color: #000;
       border: none;
       padding: 10px 28px;
       border-radius: 8px;
       font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
       display: none;
     }
-    .copy-btn:hover { background: #16a34a; }
+    .copy-btn:hover { background: #d97706; }
   </style>
 </head>
 <body>
   <div class="box">
     <h2>⬛ Black Hub</h2>
-    <p>Sua key foi gerada com sucesso!</p>
-    <div id="key">Gerando...</div>
+    <p>Cole este token no jogo para gerar sua key!</p>
+    <div id="token-box">Gerando...</div>
     <div id="msg">Aguarde...</div>
     <div id="timer"></div>
-    <button class="copy-btn" id="copyBtn" onclick="copyKey()">📋 Copiar Key</button>
+    <button class="copy-btn" id="copyBtn" onclick="copyToken()">📋 Copiar Token</button>
   </div>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const hwid = params.get("hwid");
-    const keyEl = document.getElementById("key");
-    const msgEl = document.getElementById("msg");
-    const timerEl = document.getElementById("timer");
-    const copyBtn = document.getElementById("copyBtn");
+    const tokenEl  = document.getElementById("token-box");
+    const msgEl    = document.getElementById("msg");
+    const timerEl  = document.getElementById("timer");
+    const copyBtn  = document.getElementById("copyBtn");
 
-    let generatedKey = "";
+    let generatedToken = "";
+    let countdown = 600; // 10 minutos
 
-    if (!hwid) {
-      keyEl.textContent = "❌ HWID não encontrado";
-      keyEl.style.color = "#f87171";
-      msgEl.textContent = "Abra este link pelo script no Roblox.";
-    } else {
-      fetch("https://little-cell-5b16.farkzzin.workers.dev/generate?hwid=" + hwid)
-        .then(r => r.json())
-        .then(data => {
-          if (data.key) {
-            generatedKey = data.key;
-            keyEl.textContent = data.key;
-            msgEl.textContent = "✅ Válida por 24 horas | Vinculada ao seu PC";
-            timerEl.textContent = "⏱ Cole esta key no jogo para liberar o hub";
-            copyBtn.style.display = "inline-block";
-          } else {
-            keyEl.textContent = "❌ Erro ao gerar key";
-            keyEl.style.color = "#f87171";
-            msgEl.textContent = "Tente novamente.";
-          }
-        })
-        .catch(() => {
-          keyEl.textContent = "❌ Erro de conexão";
-          keyEl.style.color = "#f87171";
-          msgEl.textContent = "Verifique sua conexão e tente novamente.";
-        });
-    }
+    fetch("https://little-cell-5b16.farkzzin.workers.dev/token")
+      .then(r => r.json())
+      .then(data => {
+        if (data.token) {
+          generatedToken = data.token;
+          tokenEl.textContent = data.token;
+          msgEl.textContent = "✅ Cole este token no jogo!";
+          copyBtn.style.display = "inline-block";
 
-    function copyKey() {
-      navigator.clipboard.writeText(generatedKey);
+          // Countdown 10 min
+          const interval = setInterval(() => {
+            countdown--;
+            const min = Math.floor(countdown / 60);
+            const sec = countdown % 60;
+            timerEl.textContent = `⏱ Expira em ${min}:${sec.toString().padStart(2,'0')}`;
+            if (countdown <= 0) {
+              clearInterval(interval);
+              timerEl.textContent = "❌ Token expirado! Abra o link novamente.";
+              timerEl.style.color = "#f87171";
+              copyBtn.style.display = "none";
+            }
+          }, 1000);
+        }
+      })
+      .catch(() => {
+        tokenEl.textContent = "❌ Erro de conexão";
+        tokenEl.style.color = "#f87171";
+        msgEl.textContent = "Tente novamente.";
+      });
+
+    function copyToken() {
+      navigator.clipboard.writeText(generatedToken);
       copyBtn.textContent = "✅ Copiado!";
-      setTimeout(() => copyBtn.textContent = "📋 Copiar Key", 2000);
+      setTimeout(() => copyBtn.textContent = "📋 Copiar Token", 2000);
     }
   </script>
 </body>
