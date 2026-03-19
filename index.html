@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Black Hub - Key System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f0f14;
+      color: #fff;
+      font-family: 'Segoe UI', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: #1a1a24;
+      border: 1px solid #2a2a3a;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      width: 480px;
+    }
+    h2 { font-size: 22px; margin-bottom: 8px; }
+    p { color: #888; font-size: 13px; margin-bottom: 24px; }
+    #key {
+      background: #0f0f14;
+      border: 1px solid #3a3a5a;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 18px;
+      font-family: monospace;
+      color: #4ade80;
+      letter-spacing: 2px;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+    #msg { color: #aaa; font-size: 13px; }
+    #timer { color: #f59e0b; font-size: 12px; margin-top: 8px; }
+    .copy-btn {
+      margin-top: 16px;
+      background: #22c55e;
+      color: #fff;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+    .copy-btn:hover { background: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>⬛ Black Hub</h2>
+    <p>Sua key foi gerada com sucesso!</p>
+    <div id="key">Gerando...</div>
+    <div id="msg">Aguarde...</div>
+    <div id="timer"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copyKey()">📋 Copiar Key</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const hwid = params.get("hwid");
+    const keyEl = document.getElementById("key");
+    const msgEl = document.getElementById("msg");
+    const timerEl = document.getElementById("timer");
+    const copyBtn = document.getElementById("copyBtn");
+
+    let generatedKey = "";
+
+    if (!hwid) {
+      keyEl.textContent = "❌ HWID não encontrado";
+      keyEl.style.color = "#f87171";
+      msgEl.textContent = "Abra este link pelo script no Roblox.";
+    } else {
+      fetch("https://little-cell-5b16.farkzzin.workers.dev/generate?hwid=" + hwid)
+        .then(r => r.json())
+        .then(data => {
+          if (data.key) {
+            generatedKey = data.key;
+            keyEl.textContent = data.key;
+            msgEl.textContent = "✅ Válida por 24 horas | Vinculada ao seu PC";
+            timerEl.textContent = "⏱ Cole esta key no jogo para liberar o hub";
+            copyBtn.style.display = "inline-block";
+          } else {
+            keyEl.textContent = "❌ Erro ao gerar key";
+            keyEl.style.color = "#f87171";
+            msgEl.textContent = "Tente novamente.";
+          }
+        })
+        .catch(() => {
+          keyEl.textContent = "❌ Erro de conexão";
+          keyEl.style.color = "#f87171";
+          msgEl.textContent = "Verifique sua conexão e tente novamente.";
+        });
+    }
+
+    function copyKey() {
+      navigator.clipboard.writeText(generatedKey);
+      copyBtn.textContent = "✅ Copiado!";
+      setTimeout(() => copyBtn.textContent = "📋 Copiar Key", 2000);
+    }
+  </script>
+</body>
+</html>
